@@ -288,6 +288,26 @@ void Game::sAnimation() {
                 animComp.currentName = desired;
             }
 
+            // --- origin & scale ---
+            sf::Sprite& sprite = animComp.anim.getSprite();
+            auto texRect = sprite.getTextureRect();
+
+            if (e->tag() == "freya") {
+                // center‐orig and scale so height == 80px
+                sprite.setOrigin(texRect.width/2.f, texRect.height/2.f);
+                float scaleFactor = 80.f / float(texRect.height);
+                sprite.setScale(
+                    state.facing_right ?  scaleFactor : -scaleFactor,
+                                             scaleFactor
+                );
+            } else {
+                // existing 4× scale for player/others
+                sprite.setOrigin(texRect.width/2.f, texRect.height/2.f);
+                sprite.setScale(
+                    state.facing_right ? 4.f : -4.f,
+                                         4.f
+                );
+            }
         }
 
         // --- bone override ---
