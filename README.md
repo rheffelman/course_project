@@ -36,8 +36,6 @@
 
     Restart Visual Studio if it is open
 
-# Download and extract the assignment zip file
-
 # Double click 'SFMLGame.sln', Visual Studio should launch
 
 # Click 'ok' to any warnings
