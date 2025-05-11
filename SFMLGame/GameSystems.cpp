@@ -16,51 +16,33 @@ constexpr float ECB_HEIGHT = 120.0f;
 void Game::sRender() {
     window.clear();
 
-    // --- FIRST PASS: TRAILS ---
+    // --- PASS 1: TRAILS ---
     for (auto* e : entityManager.getEntities("trail")) {
         if (!e->isActive() || !e->has<CTransform>() || !e->has<CAnimation>()) continue;
 
         auto& transform = e->get<CTransform>();
         auto& anim = e->get<CAnimation>().anim;
 
-        anim.setPosition(transform.pos);
+        anim.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
         anim.setRotation(transform.angle);
         anim.draw(window);
     }
 
-    // --- SECOND PASS: EVERYTHING ELSE ---
-    for (auto* e : entityManager.getEntities()) {
-        if (!e->isActive() || e->tag() == "trail") continue;
-
-        if (!e->has<CTransform>()) continue;
+    // --- PASS 2: PLAYER ---
+    for (auto* e : entityManager.getEntities("player")) {
+        if (!e->isActive() || !e->has<CTransform>()) continue;
 
         const auto& transform = e->get<CTransform>();
 
-        // Draw animation if present
         if (e->has<CAnimation>()) {
             auto& anim = e->get<CAnimation>().anim;
-            anim.setPosition(transform.pos);
+            anim.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
             anim.setRotation(transform.angle);
             anim.update();
             anim.draw(window);
         }
 
-        // Otherwise, draw shape
-        else if (e->has<CShape>() && e->tag() != "attack") {
-            auto& shape = e->get<CShape>();
-            if (shape.isRect) {
-                shape.rect.setPosition(transform.pos.x, transform.pos.y);
-                shape.rect.setRotation(transform.angle);
-                window.draw(shape.rect);
-            } else {
-                shape.circle.setPosition(transform.pos.x, transform.pos.y);
-                shape.circle.setRotation(transform.angle);
-                window.draw(shape.circle);
-            }
-        }
-
-
-        // Draw health bar if present
+        // Health bar
         if (e->has<CHealth>()) {
             const auto& health = e->get<CHealth>();
             float barWidth = 50.0f;
@@ -78,38 +60,143 @@ void Game::sRender() {
             window.draw(back);
             window.draw(front);
         }
-        // --- Render CECB wireframes if toggled on ---
-        if (showCECB) {
-            for (auto* e : entityManager.getEntities()) {
-                if (!e->isActive() || !e->has<CECB>()) continue;
+    }
 
-                const auto& ecb = e->get<CECB>();
-                window.draw(ecb.shape);
+    // --- PASS 3: ENEMIES ---
+    for (auto* e : entityManager.getEntities("freya")) {
+        if (!e->isActive() || !e->has<CTransform>()) continue;
+
+        const auto& transform = e->get<CTransform>();
+
+        if (e->has<CAnimation>()) {
+            auto& anim = e->get<CAnimation>().anim;
+            anim.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            anim.setRotation(transform.angle);
+            anim.update();
+            anim.draw(window);
+        }
+
+        if (e->has<CHealth>()) {
+            const auto& health = e->get<CHealth>();
+            float barWidth = 50.0f;
+            float barHeight = 6.0f;
+            float percent = static_cast<float>(health.current) / health.max;
+
+            sf::RectangleShape back(sf::Vector2f(barWidth, barHeight));
+            back.setFillColor(sf::Color::Black);
+            back.setPosition(transform.pos.x - barWidth / 2, transform.pos.y - 40);
+
+            sf::RectangleShape front(sf::Vector2f(barWidth * percent, barHeight));
+            front.setFillColor(sf::Color::Red);
+            front.setPosition(transform.pos.x - barWidth / 2, transform.pos.y - 40);
+
+            window.draw(back);
+            window.draw(front);
+        }
+    }
+
+    // --- PASS 4: BONES ---
+    for (auto* e : entityManager.getEntities("bone")) {
+        if (!e->isActive() || !e->has<CTransform>()) continue;
+
+        const auto& transform = e->get<CTransform>();
+        if (e->has<CAnimation>()) {
+            auto& anim = e->get<CAnimation>().anim;
+            anim.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            anim.setRotation(transform.angle);
+            anim.update();
+            anim.draw(window);
+        } else if (e->has<CShape>()) {
+            auto& shape = e->get<CShape>();
+            if (shape.isRect) {
+                shape.rect.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+                shape.rect.setRotation(transform.angle);
+                window.draw(shape.rect);
+            } else {
+                shape.circle.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+                shape.circle.setRotation(transform.angle);
+                window.draw(shape.circle);
             }
         }
-        // Render wireframes if toggled
-        if (showHitboxes && e->has<CShape>()) {
+    }
+
+    // --- PASS 5: ATTACKS ---
+    for (auto* e : entityManager.getEntities("attack")) {
+        if (!e->isActive() || !e->has<CTransform>() || !e->has<CShape>()) continue;
+
+        auto& transform = e->get<CTransform>();
+        auto& shape = e->get<CShape>();
+        if (shape.isRect) {
+            shape.rect.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            shape.rect.setRotation(transform.angle);
+            if (!showHitboxes) {
+                window.draw(shape.rect);
+            }
+        } else {
+            shape.circle.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            shape.circle.setRotation(transform.angle);
+            if (!showHitboxes) {
+                window.draw(shape.circle);
+            }
+        }
+    }
+
+    // --- PASS 6: OTHER ENTITIES ---
+    for (auto* e : entityManager.getEntities()) {
+        if (!e->isActive() || e->tag() == "trail" || e->tag() == "player" || e->tag() == "enemy" || e->tag() == "bone" || e->tag() == "attack") continue;
+        if (!e->has<CTransform>() || !e->has<CShape>()) continue;
+
+        auto& transform = e->get<CTransform>();
+        auto& shape = e->get<CShape>();
+
+        if (shape.isRect) {
+            shape.rect.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            shape.rect.setRotation(transform.angle);
+            window.draw(shape.rect);
+        } else {
+            shape.circle.setPosition(sf::Vector2f(transform.pos.x, transform.pos.y));
+            shape.circle.setRotation(transform.angle);
+            window.draw(shape.circle);
+        }
+    }
+
+    // --- PASS 7: CECB Wireframes ---
+    if (showCECB) {
+        for (auto* e : entityManager.getEntities()) {
+            if (!e->isActive() || !e->has<CECB>()) continue;
+            const auto& ecb = e->get<CECB>();
+            window.draw(ecb.shape);
+        }
+    }
+
+    // --- PASS 8: Hitbox Wireframes ---
+    if (showHitboxes) {
+        for (auto* e : entityManager.getEntities()) {
+            if (!e->isActive() || !e->has<CShape>() || e->tag() == "trail") continue;
+
             auto& shape = e->get<CShape>();
             if (shape.isRect) {
                 sf::RectangleShape outline = shape.rect;
                 outline.setFillColor(sf::Color::Transparent);
-                outline.setOutlineColor(sf::Color::Magenta); // Customize color
+                outline.setOutlineColor(sf::Color::Magenta);
                 outline.setOutlineThickness(2);
                 window.draw(outline);
             } else {
                 sf::CircleShape outline = shape.circle;
                 outline.setFillColor(sf::Color::Transparent);
-                outline.setOutlineColor(sf::Color::Magenta); // Customize color
+                outline.setOutlineColor(sf::Color::Magenta);
                 outline.setOutlineThickness(2);
                 window.draw(outline);
             }
         }
-
     }
 
+    // --- PASS 9: IMGUI & DISPLAY ---
     ImGui::SFML::Render(window);
     window.display();
 }
+
+
 //--
 void Game::sMovement() {
 
