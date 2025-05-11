@@ -464,7 +464,6 @@ void Game::spawn_freya(const Vec2f& pos, int health) {
     idle_anim.setScale(2.0f);
     sf::Sprite& sprite = idle_anim.getSprite();
 
-    // Calculate original sprite size
     sf::Vector2f texSize(
         static_cast<float>(sprite.getTextureRect().width),
         static_cast<float>(sprite.getTextureRect().height)
@@ -475,14 +474,12 @@ void Game::spawn_freya(const Vec2f& pos, int health) {
 
     freya->add<CAnimation>(idle_anim, "freya_idle");
 
-    // Set shape (for hitbox previewing / debug)
     sf::Vector2f frameSize = {
         texSize.x * 1,
         texSize.y * 1
     };
     freya->add<CShape>(frameSize, sf::Color::Transparent, sf::Color::White, 0);
 
-    // Add ECB centered at original spawn point
     CECB ecb;
     ecb.setDiamond(pos, ECB_WIDTH, ECB_HEIGHT);
     freya->add<CECB>(ecb);

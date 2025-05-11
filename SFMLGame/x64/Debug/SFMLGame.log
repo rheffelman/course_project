@@ -1,17 +1,7 @@
-﻿  Game.cpp
-D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
-D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37): warning C4244:         with
-D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37): warning C4244:         [
-D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37): warning C4244:             _Ty=int
-D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37): warning C4244:         ]
-  (compiling source file 'Game.cpp')
-      D:\game_engine_programming\course_project\SFMLGame\Entity.h(69,37):
-      the template instantiation context (the oldest one first) is
-          D:\game_engine_programming\course_project\SFMLGame\Game.cpp(120,12):
-          see reference to function template instantiation 'T &Entity::add<CTransform,const Vec2f&,Vec2f,int>(const Vec2f &,Vec2f &&,int &&)' being compiled
-          with
-          [
-              T=CTransform
-          ]
+﻿  GameSystems.cpp
+D:\game_engine_programming\course_project\SFMLGame\GameSystems.cpp(293,35): error C2660: 'Animation::setScale': function does not take 2 arguments
+      D:\game_engine_programming\course_project\SFMLGame\Animation.h(75,10):
+      see declaration of 'Animation::setScale'
+      D:\game_engine_programming\course_project\SFMLGame\GameSystems.cpp(293,35):
+      while trying to match the argument list '(float, float)'
   
-  SFMLGame.vcxproj -> D:\game_engine_programming\course_project\x64\Debug\SFMLGame.exe
